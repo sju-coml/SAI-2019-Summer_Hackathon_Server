@@ -23,6 +23,20 @@ class DetectModel(object):
             self.num_of_people += 2
 
 @app.route("/numofpeople", methods=["GET"])
+
+df = pd.read_csv('day_time_avg.csv')
+
+def get_day_mean_data():
+    data = {
+        "mon_avg": df.avg[0],
+        "tue_avg": df.avg[1],
+        "wed_avg": df.avg[2],
+        "thr_avg": df.avg[3],
+        "fri_avg": df.avg[4],
+    }
+    return flask.jsonify(data)
+
+
 def get_num_of_people():
     data = {"num": model.num_of_people}
     return flask.jsonify(data)

@@ -91,6 +91,8 @@ class DetectModel(object):
             self.num_of_people = all_num
             self.num_of_tables = t_num
 
+            stats = []
+
             for t, status in enumerate(table_status):
                 table_status[t]['time'] -= 1
                 if self.num_of_tables[t] > 0:
@@ -112,9 +114,24 @@ class DetectModel(object):
                     else:
                         table_status[t]['time'] = 60
                         table_status[t]['count'] = 0
-                elif status['status'] == 2:
-                    pass
-            
+                elif status['status'] == 2 and status['time'] < 500:
+                    rate = float(status['count']) / (540 - status['time'])
+                    if rate >= 0.6:
+                        table_status[t]['status'] = 1
+                        table_status[t]['time'] = 60
+                        table_status[t]['count'] = 0
+                    else:
+                        if status['time'] == 0:
+                            table_status[t]['status'] = 0
+                            table_status[t]['time'] = 60
+                            table_status[t]['count'] = 0
+                
+                stats.append(table_status[t]['status'])
+
+                if table_status[t]['status'] == 0:
+                    self.num_of_tables[t] = 0
+
+            self.stats = stats   
             time.sleep(1)            
 
 
@@ -126,8 +143,10 @@ def get_num_of_people():
 
 @app.route("/tablestatus", methods=["POST"])
 def get_table_status():
-    data = {"t1": model.num_of_tables[0], "t2": model.num_of_tables[1],
-            "t3": model.num_of_tables[2], "t4": model.num_of_tables[3]}
+    data = {"t1": model.num_of_tables[0], "s1": model.stats[0],
+            "t2": model.num_of_tables[1], "s2": model.stats[1],
+            "t3": model.num_of_tables[2], "s3": model.stats[2],
+            "t4": model.num_of_tables[3], "s4": model.stats[3]}
     return flask.jsonify(data)
 
     

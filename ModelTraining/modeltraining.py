@@ -8,7 +8,7 @@ import datetime as dt
 df_real_original = pd.read_csv('data.csv')
 
 #-----------------10%샘플 데이터 기준시
-#df_original = df_real_original.sample(frac=0.1)
+#df_original = df_real_original.sample(frac=0.1)0
 #-----------------10%샘플 데이터 기준시
 
 

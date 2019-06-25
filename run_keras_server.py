@@ -13,8 +13,8 @@ class DetectModel(object):
     def __init__(self):
         self.num_of_people = 0
         self.face_model = FaceDetector()
-        self.face_model.load_model('model_data/yolo_weights.h5')
-        self.vidcap = cv2.VideoCapture('data/20190625_134522.mp4')
+        self.face_model.load_model('D:/python_projects/seat_check_rest_api/model_data/yolo_weights.h5')
+        self.vidcap = cv2.VideoCapture('D:/python_projects/seat_check_rest_api/data/20190625_134522.mp4')
         self.table = [0, 0, 0, 0]
 
         if not self.vidcap.isOpened():
@@ -29,6 +29,7 @@ class DetectModel(object):
         while True:
             cnt = []
             tables = []
+           
             for i in range(3):
                 all_num = 0
                 t_num = [0, 0, 0, 0]
@@ -73,14 +74,14 @@ class DetectModel(object):
                 
                 cnt.append(all_num)
                 tables.append(t_num)
-                time.sleep(2)
+                time.sleep(5)
             
             self.num_of_people = max(cnt)
             self.num_of_tables = [0, 0, 0, 0]
+
             for t in range(4):
                 self.num_of_tables[t] = max([tables[0][t], tables[1][t], tables[2][t]])
-
-            time.sleep(15)
+            time.sleep(60)
 
 @app.route("/numofpeople", methods=["GET"])
 def get_num_of_people():
@@ -92,11 +93,17 @@ def get_table_status():
     data = {"t1": model.num_of_tables[0], "t2": model.num_of_tables[1],
             "t3": model.num_of_tables[2], "t4": model.num_of_tables[3]}
     return flask.jsonify(data)
+
+
+global model
+model = DetectModel()
+app.run(host='0.0.0.0', port=5000)
     
 
+"""
 if __name__ == "__main__":
     print("Loading keras model")
     global model
     model = DetectModel()
     app.run()
-    
+"""

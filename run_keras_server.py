@@ -90,6 +90,8 @@ class DetectModel(object):
             self.num_of_people = all_num
             self.num_of_tables = t_num
 
+            stats = []
+
             for t, status in enumerate(table_status):
                 table_status[t]['time'] -= 1
                 if self.num_of_tables[t] > 0:
@@ -103,7 +105,7 @@ class DetectModel(object):
                     else:
                         table_status[t]['time'] = 60
                         table_status[t]['count'] = 0
-                else if status['status'] == 1 and status['time'] == 0:
+                elif status['status'] == 1 and status['time'] == 0:
                     if status['count'] < 10:
                         table_status[t]['status'] = 2
                         table_status[t]['time'] = 540
@@ -111,9 +113,24 @@ class DetectModel(object):
                     else:
                         table_status[t]['time'] = 60
                         table_status[t]['count'] = 0
-                else if status['status'] == 2:
-                    pass
-            
+                elif status['status'] == 2 and status['time'] < 500:
+                    rate = float(status['count']) / (540 - status['time'])
+                    if rate >= 0.6:
+                        table_status[t]['status'] = 1
+                        table_status[t]['time'] = 60
+                        table_status[t]['count'] = 0
+                    else:
+                        if status['time'] == 0:
+                            table_status[t]['status'] = 0
+                            table_status[t]['time'] = 60
+                            table_status[t]['count'] = 0
+                
+                stats.append(table_status[t]['status'])
+
+                if table_status[t]['status'] == 0:
+                    self.num_of_tables[t] = 0
+
+            self.stats = stats   
             time.sleep(1)            
 
 
@@ -122,22 +139,15 @@ def get_num_of_people():
     data = {"num": model.num_of_people}
     return flask.jsonify(data)
 
-@app.route("/tablestatus", methods=["POST"])
+@app.route("/tablestatus", methods=["GET"])
 def get_table_status():
-    data = {"t1": model.num_of_tables[0], "t2": model.num_of_tables[1],
-            "t3": model.num_of_tables[2], "t4": model.num_of_tables[3]}
+    data = {"t1": model.num_of_tables[0], "s1": model.stats[0],
+            "t2": model.num_of_tables[1], "s2": model.stats[1],
+            "t3": model.num_of_tables[2], "s3": model.stats[2],
+            "t4": model.num_of_tables[3], "s4": model.stats[3]}
     return flask.jsonify(data)
 
 
 global model
 model = DetectModel()
 app.run(host='0.0.0.0', port=5000)
-    
-
-"""
-if __name__ == "__main__":
-    print("Loading keras model")
-    global model
-    model = DetectModel()
-    app.run()
-"""

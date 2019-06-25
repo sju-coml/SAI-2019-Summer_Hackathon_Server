@@ -24,6 +24,19 @@ class DetectModel(object):
 
 @app.route("/numofpeople", methods=["GET"])
 
+def get_num_of_people():
+    data = {"num": model.num_of_people}
+    return flask.jsonify(data)
+
+if __name__ == "__main__":
+    print("Loading keras model")
+    global model
+    model = DetectModel()
+    app.run()
+    
+    
+@app.route("/avgofpeople", methods=["GET")
+                                    
 df = pd.read_csv('day_time_avg.csv')
 
 def get_day_mean_data():
@@ -36,14 +49,4 @@ def get_day_mean_data():
     }
     return flask.jsonify(data)
 
-
-def get_num_of_people():
-    data = {"num": model.num_of_people}
-    return flask.jsonify(data)
-
-if __name__ == "__main__":
-    print("Loading keras model")
-    global model
-    model = DetectModel()
-    app.run()
     

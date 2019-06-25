@@ -46,7 +46,7 @@ class FaceDetector(object):
         self.yolo_model = self.generate(yolo_model_path, self.anchors, 0.2)
 
 
-    def detect(self, frame, only_face=False):
+    def detect(self, frame):
         faces = []
         if self.model_image_size != (None, None):
             assert self.model_image_size[0]%32 == 0, 'Multiples of 32 required'
@@ -61,26 +61,26 @@ class FaceDetector(object):
         image_data = np.expand_dims(image_data, 0)  # Add batch dimension.
 
         boxes, scores, classes = self.sess.run(
-            [self.gen_face_model['boxes'], self.gen_face_model['scores'], self.gen_face_model['classes']],
+            [self.yolo_model['boxes'], self.yolo_model['scores'], self.yolo_model['classes']],
             feed_dict={
-                self.gen_face_model['model'].input: image_data,
+                self.yolo_model['model'].input: image_data,
                 self.input_image_shape: [frame.size[1], frame.size[0]],
-                K.learning_phase(): 0
+                #K.learning_phase(): 0
             })
 
         # face detection
-        face_confidences = []
-        for i, score in enumerate(face_scores):
-            box = face_boxes[i]
+        confidences = []
+        for i, score in enumerate(scores):
+            box = boxes[i]
             y1, x1, y2, x2 = box
             y1 = max(0, np.floor(y1 + 2.5).astype('int32'))
             x1 = max(0, np.floor(x1 + 2.5).astype('int32'))
             y2 = min(frame.size[1], np.floor(y2 + 2.5).astype('int32'))
             x2 = min(frame.size[0], np.floor(x2 + 2.5).astype('int32'))
-            face_confidences.append(score)
+            confidences.append(score)
             faces.append((x1, y1, x2, y2))
         
-        return faces, face_confidences
+        return faces, confidences
 
 
     def close_session(self):

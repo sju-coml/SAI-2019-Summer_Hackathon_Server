@@ -28,14 +28,9 @@ def get_num_of_people():
     data = {"num": model.num_of_people}
     return flask.jsonify(data)
 
-if __name__ == "__main__":
-    print("Loading keras model")
-    global model
-    model = DetectModel()
-    app.run()
+
     
-    
-@app.route("/avgofpeople", methods=["GET")
+@app.route("/avgofpeople", methods=["POST"])
                                     
 df = pd.read_csv('day_time_avg.csv')
 
@@ -48,5 +43,13 @@ def get_day_mean_data():
         "fri_avg": df.avg[4],
     }
     return flask.jsonify(data)
+                                    
+                                    
+if __name__ == "__main__":
+    print("Loading keras model")
+    global model
+    model = DetectModel()
+    app.run()
+    
 
     
